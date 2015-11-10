@@ -24,7 +24,7 @@ pygtk.require('2.0')
 
 import gtk, gtk.glade, gobject
 
-import getopt, sys, os
+import getopt, sys, os, os.path
 import types, ConfigParser
 import sane
 import PIL.ImageDraw as ImageDraw
@@ -332,7 +332,7 @@ class MainWindow:
             return
 
         w, h = pil_image.size
-        data = pil_image.tostring()
+        data = pil_image.tobytes()
 
         if pil_image.mode == 'L':
             rgb_data = ''
@@ -793,6 +793,10 @@ class MainWindow:
         self.config.set('defaults', 'rotate', str(DEGREE_NUMBERS[setting]))
 
     def save_image(self, pil_image, file_name):
+        path, file=os.path.split(file_name)
+        if path:
+            if not os.path.exists(file_name):
+                os.makedirs(path)
         if file_name.strip().endswith('.djvu'):
             return self.save_as_djvu(pil_image, file_name)
         return pil_image.save(file_name)

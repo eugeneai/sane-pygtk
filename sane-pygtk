@@ -404,6 +404,7 @@ class MainWindow:
 
         # close scanner
         scanner.close()
+        self.imagemenuitem_save_defaults_activate_cb(None)
 
         # exit program
         if self.exit_after_scan:
@@ -793,13 +794,20 @@ class MainWindow:
         self.config.set('defaults', 'rotate', str(DEGREE_NUMBERS[setting]))
 
     def save_image(self, pil_image, file_name):
-        path, file=os.path.split(file_name)
-        if path:
-            if not os.path.exists(file_name):
-                os.makedirs(path)
-        if file_name.strip().endswith('.djvu'):
-            return self.save_as_djvu(pil_image, file_name)
-        return pil_image.save(file_name)
+        try:
+            if file_name.strip().endswith('.djvu'):
+                return self.save_as_djvu(pil_image, file_name)
+            return pil_image.save(file_name)
+        except IOError as e:
+            path, file=os.path.split(file_name)
+            if path:
+                if not os.path.exists(file_name):
+                    os.makedirs(path)
+                else:
+                    print "ERROR:", e
+                    raise SystemExit(1)
+            return self.save_image(pil_image, file_name)
+
 
     def save_as_djvu(self, pil_image, file_name):
         cmds={
@@ -866,7 +874,8 @@ def main():
 
 inc_re=re.compile(r'(\d*)')
 def inc_fn(file_name):
-    ll = inc_re.split(file_name)
+    name, ext = os.path.splitext(file_name)
+    ll = inc_re.split(name)
     if len(ll) > 1:
         start = ''.join(ll[:-2])
         stop  = ll[-1:][0]
@@ -880,7 +889,8 @@ def inc_fn(file_name):
         num   = int(num)
         num  += 1
         pattern = r'%'+zfill+str(lnum)+'i'
-        file_name = start + (pattern % num) + stop
+        name = start + (pattern % num) + stop
+    file_name = name+ext
 
     return file_name
 

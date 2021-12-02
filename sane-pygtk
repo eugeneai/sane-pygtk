@@ -19,6 +19,9 @@
 
 # Copyright (C) 2008 Yaacov Zamir <kzamir_a_walla.co.il>
 
+import os
+os.system("sudo scanimage -L")
+
 import pygtk
 pygtk.require('2.0')
 
